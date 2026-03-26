@@ -75,6 +75,8 @@ def assemble_frame_accurate(video, ranges, output):
         "-i", video,
         "-filter_complex", filter_str,
         "-map", "[outv]", "-map", "[outa]",
+        "-c:v", "libx264", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "192k",
         output,
     ])
 
