@@ -1,0 +1,14 @@
+mode: "auto"               # "auto" | "approval"
+tick_interval_s: 2.0
+tick_timeout_s: 15
+max_ticks: 500
+model: "claude-sonnet-4-6"
+retries: 1
+min_confidence: 0.5
+ambiguity_safe_stop: true
+log_level: "INFO"
+no_progress_window: 3
+loop_window: 8
+loop_threshold: 4
+quiesce_max_wait_s: 1.5
+quiesce_poll_s: 0.1

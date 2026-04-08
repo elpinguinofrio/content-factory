@@ -1,0 +1,21 @@
+likes:
+  - "dogs"
+  - "hiking"
+  - "live music"
+  - "cooking"
+  - "books"
+dislikes:
+  - "smoking"
+  - "club photos only"
+red_flags:
+  - "negative bio energy"
+  - "MLM language"
+deal_breakers:
+  - "explicit drug references"
+weights:
+  likes: 0.1
+  dislikes: -0.1
+  red_flags: -0.2
+  deal_breakers: -10.0
+threshold:
+  swipe_right_min_score: 0.55

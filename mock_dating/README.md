@@ -55,3 +55,33 @@ Non-functional:
 ## TL;DR recommendation
 
 **Vision-first agent** for v1. It has the smallest code surface, the fewest assumptions about the mock app's internals, and the best debugging story (screenshot + JSON per tick). Token cost is its weak point, which the user has already deprioritized. The path from v1 → v3 progressively replaces vision calls with deterministic classifiers and handlers, ending close to a hybrid state-machine design. See [`architectures.md`](architectures.md) for the full comparison.
+
+## Implementation
+
+The vision-first agent is implemented in [`agent/`](agent/):
+
+```
+agent/
+  main.py              # run loop
+  config/              # persona.yaml, preferences.yaml, runtime.yaml
+  config_loader.py
+  harness/             # adb bridge, screenshot service, action executor
+  vision/              # schema, prompt, LLM client, safety gate
+  scoring/             # deterministic compatibility scorer
+  chat/                # reply engine + per-conversation memory
+  audit/               # per-tick logger + offline replay
+```
+
+Tests live in [`tests/`](tests/) and run with stdlib unittest:
+
+```bash
+python3 -m unittest discover -s mock_dating/tests -t .
+```
+
+Smoke-run the full pipeline with fakes (no emulator, no API key needed):
+
+```bash
+python3 -m mock_dating.agent.main --runs-dir /tmp/mock_runs --fake
+```
+
+When run with a real emulator + `ANTHROPIC_API_KEY` set, drop the `--fake` flag and the same code drives `adb` and the Anthropic Messages API.
