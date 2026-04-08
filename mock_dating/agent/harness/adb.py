@@ -110,9 +110,6 @@ class ActionRecord:
     kind: str
     args: dict
 
-    def as_tuple(self) -> tuple:
-        return (self.kind, tuple(sorted(self.args.items())))
-
 
 @dataclass
 class FakeAdb:
@@ -125,7 +122,7 @@ class FakeAdb:
     frames: list[bytes] = field(default_factory=list)
     screen: tuple[int, int] = (1080, 1920)
     actions: list[ActionRecord] = field(default_factory=list)
-    _idx: int = 0
+    _idx: int = field(default=0, init=False, repr=False)
 
     def screencap(self) -> bytes:
         if not self.frames:

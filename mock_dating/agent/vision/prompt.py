@@ -113,15 +113,9 @@ class PromptBundle:
         }
 
 
-def build_decision_prompt(
-    *,
-    config: Config,
-    tick_id: int,
-    image: bytes,
-    curr_hash: str,
-    prev_hash: str | None,
-    recent_actions: list[str],
-) -> PromptBundle:
+def build_system_prompt(config: Config) -> str:
+    """Build the system prompt. Config is immutable per run, so callers
+    should cache the result and reuse it across ticks."""
     persona_yaml = json.dumps(
         {
             "display_name": config.persona.display_name,
@@ -144,8 +138,7 @@ def build_decision_prompt(
         indent=2,
         sort_keys=True,
     )
-
-    system = SYSTEM_PROMPT_TEMPLATE.format(
+    return SYSTEM_PROMPT_TEMPLATE.format(
         actions=", ".join(ACTIONS),
         screens=", ".join(SCREENS),
         decision_schema=json.dumps(DECISION_SCHEMA_DESCRIPTION, indent=2),
@@ -154,13 +147,41 @@ def build_decision_prompt(
         preferences=prefs_yaml,
     )
 
-    same = "SAME" if prev_hash == curr_hash else "DIFFERENT"
-    user = USER_PROMPT_TEMPLATE.format(
+
+def build_user_prompt(
+    *,
+    tick_id: int,
+    curr_hash: str,
+    prev_hash: str | None,
+    recent_actions: list[str],
+) -> str:
+    return USER_PROMPT_TEMPLATE.format(
         tick_id=tick_id,
         prev_hash=prev_hash or "(none)",
         curr_hash=curr_hash,
-        same_or_different=same,
+        same_or_different="SAME" if prev_hash == curr_hash else "DIFFERENT",
         recent_actions=json.dumps(recent_actions),
     )
 
-    return PromptBundle(system=system, user=user, image_bytes=image)
+
+def build_decision_prompt(
+    *,
+    config: Config,
+    tick_id: int,
+    image: bytes,
+    curr_hash: str,
+    prev_hash: str | None,
+    recent_actions: list[str],
+) -> PromptBundle:
+    """Build a full ``PromptBundle``. Prefer caching the system prompt via
+    ``build_system_prompt`` and calling ``build_user_prompt`` per tick."""
+    return PromptBundle(
+        system=build_system_prompt(config),
+        user=build_user_prompt(
+            tick_id=tick_id,
+            curr_hash=curr_hash,
+            prev_hash=prev_hash,
+            recent_actions=recent_actions,
+        ),
+        image_bytes=image,
+    )

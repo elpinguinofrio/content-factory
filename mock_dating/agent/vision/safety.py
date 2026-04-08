@@ -7,7 +7,7 @@ with a concrete reason. Pure function, trivially testable.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from ..config_loader import Runtime
 from .schema import ACTIONS, SCREENS, Decision
@@ -21,14 +21,10 @@ class SafetyResult:
 
 
 def _safe_stop(reason: str, base: Decision) -> Decision:
-    return Decision(
+    return replace(
+        base,
         screen=base.screen if base.screen in SCREENS else "unknown",
-        confidence=base.confidence,
         action="noop",
-        reasoning=base.reasoning,
-        profile=base.profile,
-        score=base.score,
-        score_reason=base.score_reason,
         action_args={},
         ambiguity=True,
         safe_stop_reason=reason,

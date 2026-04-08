@@ -1,6 +1,6 @@
 """Offline replay of recorded ticks.
 
-Takes a tick directory, loads the screen.png and prompt.txt, and runs
+Takes a tick directory, loads the screen.png and prompt.json, and runs
 them through a given ``VisionClient``. Returns the new ``Decision``
 alongside the old one so callers can diff them.
 """
@@ -30,15 +30,12 @@ def _load_original(tick_dir: Path) -> tuple[Decision, PromptBundle]:
         json.loads((tick_dir / "decision.json").read_text(encoding="utf-8"))
     )
     image = (tick_dir / "screen.png").read_bytes()
-    prompt_text = (tick_dir / "prompt.txt").read_text(encoding="utf-8")
-
-    # prompt.txt is "=== SYSTEM ===\n...\n\n=== USER ===\n...\n"
-    if "=== SYSTEM ===" in prompt_text and "=== USER ===" in prompt_text:
-        _, rest = prompt_text.split("=== SYSTEM ===\n", 1)
-        system, user = rest.split("\n=== USER ===\n", 1)
-    else:
-        system, user = "", prompt_text
-    return decision, PromptBundle(system=system.rstrip(), user=user.rstrip(), image_bytes=image)
+    prompt_data = json.loads((tick_dir / "prompt.json").read_text(encoding="utf-8"))
+    return decision, PromptBundle(
+        system=prompt_data.get("system", ""),
+        user=prompt_data.get("user", ""),
+        image_bytes=image,
+    )
 
 
 def _structurally_compatible(a: Decision, b: Decision, score_tolerance: float = 0.1) -> bool:

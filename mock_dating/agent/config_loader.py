@@ -6,7 +6,7 @@ here is performance-sensitive.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -98,36 +98,7 @@ class Config:
     runtime: Runtime
 
     def snapshot(self) -> dict[str, Any]:
-        return {
-            "persona": {
-                "display_name": self.persona.display_name,
-                "voice": self.persona.voice,
-                "goals": self.persona.goals,
-                "hard_rules": self.persona.hard_rules,
-            },
-            "preferences": {
-                "likes": self.preferences.likes,
-                "dislikes": self.preferences.dislikes,
-                "red_flags": self.preferences.red_flags,
-                "deal_breakers": self.preferences.deal_breakers,
-                "weights": self.preferences.weights,
-                "threshold": self.preferences.threshold,
-            },
-            "runtime": {
-                "mode": self.runtime.mode,
-                "tick_interval_s": self.runtime.tick_interval_s,
-                "tick_timeout_s": self.runtime.tick_timeout_s,
-                "max_ticks": self.runtime.max_ticks,
-                "model": self.runtime.model,
-                "retries": self.runtime.retries,
-                "min_confidence": self.runtime.min_confidence,
-                "ambiguity_safe_stop": self.runtime.ambiguity_safe_stop,
-                "log_level": self.runtime.log_level,
-                "no_progress_window": self.runtime.no_progress_window,
-                "loop_window": self.runtime.loop_window,
-                "loop_threshold": self.runtime.loop_threshold,
-            },
-        }
+        return asdict(self)
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:

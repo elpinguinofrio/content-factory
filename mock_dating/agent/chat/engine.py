@@ -14,10 +14,11 @@ from __future__ import annotations
 import json
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Callable, Protocol
 
+from .._util import strip_json_fence, utcnow_iso
 from ..config_loader import Config
+from ..vision.client import extract_text
 from ..vision.schema import ChatTurn, ProfileFeatures
 
 
@@ -85,16 +86,8 @@ def build_chat_prompt(
 
 
 def _parse_reply_json(text: str) -> dict:
-    text = text.strip()
-    if text.startswith("```"):
-        text = text.lstrip("`")
-        if text.lower().startswith("json"):
-            text = text[4:]
-        if text.endswith("```"):
-            text = text[:-3]
-        text = text.strip()
     try:
-        data = json.loads(text)
+        data = json.loads(strip_json_fence(text))
     except json.JSONDecodeError as e:
         raise ChatEngineError(f"reply was not valid JSON: {e}") from e
     if not isinstance(data, dict):
@@ -116,11 +109,7 @@ def generate_reply(
     system = build_chat_prompt(config=config, profile=profile, memory=memory)
     raw = client.reply(system=system, last_their_message=last_their_message)
 
-    text_parts = []
-    for block in raw.get("content", []) or []:
-        if block.get("type") == "text":
-            text_parts.append(block.get("text", ""))
-    text = "\n".join(text_parts).strip()
+    text = extract_text(raw)
     if not text:
         raise ChatEngineError("empty chat response")
 
@@ -130,11 +119,10 @@ def generate_reply(
     if not ambiguous and not reply_text:
         raise ChatEngineError("non-ambiguous reply with empty text")
 
-    next_turn_id = len(memory)
     turn = ChatTurn(
-        turn_id=next_turn_id,
+        turn_id=len(memory),
         match_id=match_id,
-        ts=datetime.now(timezone.utc).isoformat(),
+        ts=utcnow_iso(),
         role="us",
         text=reply_text,
         source="llm",

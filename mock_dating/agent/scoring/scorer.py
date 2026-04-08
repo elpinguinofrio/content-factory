@@ -17,7 +17,7 @@ Deal-breakers short-circuit the score to 0.0.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from ..config_loader import Preferences
 from ..vision.schema import Decision, ProfileFeatures
@@ -124,16 +124,10 @@ def override_decision(decision: Decision, prefs: Preferences) -> tuple[Decision,
     if decision.action in ("swipe_left", "swipe_right"):
         new_action = action_from_score(breakdown.score, prefs)
 
-    updated = Decision(
-        screen=decision.screen,
-        confidence=decision.confidence,
+    updated = replace(
+        decision,
         action=new_action,
-        reasoning=decision.reasoning,
-        profile=decision.profile,
         score=breakdown.score,
         score_reason=breakdown.reason,
-        action_args=dict(decision.action_args),
-        ambiguity=decision.ambiguity,
-        safe_stop_reason=decision.safe_stop_reason,
     )
     return updated, breakdown

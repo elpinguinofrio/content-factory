@@ -8,25 +8,27 @@ picks an action name from the canonical ACTIONS list in
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from .adb import Adb
 
 
 KEYCODE_BACK = 4
+_DEFAULT_SIZE = (1080, 1920)
 
 
 @dataclass
 class ActionExecutor:
     adb: Adb
     swipe_duration_ms: int = 300
+    _size_cache: tuple[int, int] | None = field(default=None, init=False, repr=False)
 
     def _size(self) -> tuple[int, int]:
-        w, h = self.adb.screen_size()
-        if w <= 0 or h <= 0:
-            return 1080, 1920
-        return w, h
+        if self._size_cache is None:
+            w, h = self.adb.screen_size()
+            self._size_cache = (w, h) if w > 0 and h > 0 else _DEFAULT_SIZE
+        return self._size_cache
 
     def swipe_left(self) -> None:
         w, h = self._size()
@@ -41,9 +43,6 @@ class ActionExecutor:
         )
 
     def tap_chat(self, row_index: int = 0) -> None:
-        # In v1 we tap a fixed vertical position that's 120px tall per row,
-        # offset from the top of a typical chat list. The LLM returns a row
-        # index; we convert to coordinates here.
         w, h = self._size()
         y = int(0.18 * h) + row_index * int(0.12 * h)
         self.adb.tap(int(0.5 * w), y)
@@ -55,17 +54,8 @@ class ActionExecutor:
         self.adb.key_event(KEYCODE_BACK)
 
     def tap_dismiss(self) -> None:
-        # The "dismiss" tap target is app-dependent. Default to center-top
-        # where "X" buttons commonly live in the mock. This can be overridden
-        # via ``action_args`` once we observe the actual mock app.
         w, h = self._size()
         self.adb.tap(int(0.9 * w), int(0.1 * h))
-
-    def wait(self) -> None:
-        pass  # no-op; the main loop handles sleeping
-
-    def noop(self) -> None:
-        pass
 
     def execute(self, action: str, args: dict[str, Any] | None = None) -> None:
         args = args or {}
@@ -81,9 +71,7 @@ class ActionExecutor:
             self.tap_back()
         elif action == "tap_dismiss":
             self.tap_dismiss()
-        elif action == "wait":
-            self.wait()
-        elif action == "noop":
-            self.noop()
+        elif action in ("wait", "noop"):
+            pass
         else:
             raise ValueError(f"unknown action: {action!r}")

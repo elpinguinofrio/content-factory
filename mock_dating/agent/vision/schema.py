@@ -11,7 +11,6 @@ imports from this module.
 from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
-from datetime import datetime, timezone
 from typing import Any
 
 
@@ -37,10 +36,6 @@ ACTIONS = (
     "wait",
     "noop",
 )
-
-
-def _utcnow_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 @dataclass
@@ -179,15 +174,3 @@ class ChatTurn:
             llm_call_id=d.get("llm_call_id"),
             approval_state=d.get("approval_state", "n/a"),
         )
-
-
-def new_decision_stub() -> Decision:
-    """A maximally-safe default decision. Used for ambiguous / error paths."""
-    return Decision(
-        screen="unknown",
-        confidence=0.0,
-        action="noop",
-        reasoning="stub",
-        ambiguity=True,
-        safe_stop_reason="stub",
-    )
