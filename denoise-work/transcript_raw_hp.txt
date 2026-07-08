@@ -1,0 +1,6 @@
+=== sample_raw_hp_16k.wav | 7.7s ===
+Интересно.
+
+COHERENCE_SCORE: 10
+NOISE_LEVEL: 2
+UNCLEAR_SEGMENT_COUNT: 0

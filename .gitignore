@@ -1,0 +1,5 @@
+.DS_Store
+denoise-work/*
+!denoise-work/COMPARISON.md
+!denoise-work/*.txt
+!denoise-work/*.py
