@@ -1,0 +1,17 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "[00:00] Hola, hoy vamos a hablar de un tema importante.\n[00:05] Eh, entonces, lo primero que hay que decir...\n[00:12] Gracias por su atención, hasta la vista."
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0
+    }
+  ],
+  "modelVersion": "gemini-2.5-flash"
+}
